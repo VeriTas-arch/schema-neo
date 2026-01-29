@@ -1,0 +1,34 @@
+# editor config
+**/.vscode/
+**/.idea/
+
+# python cache
+**/__pycache__/
+
+# OS cache
+**/.DS_Store
+
+# training data
+**/geometric_res/
+**/data_backup/
+
+# model
+/model/*
+!/model/star/
+
+# temp code
+/temp/
+/test/
+
+# releases and docs
+/release/
+/doc/output/
+/doc/main.pdf
+**/~$*.pptx
+**/*.pptx
+
+# specific data
+/figure/try_reason/
+/figure/tuning_curve_analysis/
+/figure/overlapping_neuron_analysis/
+*tuning*.png
