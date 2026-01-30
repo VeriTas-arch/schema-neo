@@ -7,7 +7,7 @@ from argparse import ArgumentParser
 
 import torch
 
-# from torch.optim.lr_scheduler import MultiStepLR
+from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 
 import lib.model as network
@@ -18,6 +18,7 @@ from lib import utils
 
 CUDA = torch.cuda.is_available()
 DEVICE = "cuda" if CUDA else "cpu"
+torch.set_float32_matmul_precision("high")
 
 
 def parse_args():
@@ -64,7 +65,7 @@ def main():
         regress_target_mode=cfg.regress_target_mode,
         type="training",
         task_mode=TASK,
-        seq_len="mix",
+        seq_len=3,
         seed=cfg.seed,
     )
 
@@ -79,7 +80,7 @@ def main():
         regress_target_mode=cfg.regress_target_mode,
         type="analysis",
         task_mode=TASK,
-        seq_len="mix",
+        seq_len=3,
         seed=cfg.seed + 1,
     )
 
@@ -114,7 +115,7 @@ def main():
 
     optimizer = torch.optim.Adam(model.parameters(), **cfg.optimizer)
     max_grad_norm = getattr(cfg, "max_grad_norm", 5.0)
-    # scheduler = MultiStepLR(optimizer, milestones=[180], gamma=0.5)
+    scheduler = StepLR(optimizer, step_size=1000, gamma=0.1)
 
     # Initialize TrainingHook
     training_hook = TrainingHook(
@@ -139,11 +140,13 @@ def main():
             output = utils.batch_processor(model, data, cfg)
             loss = output["loss"]
             loss.backward()
-            torch.nn.utils.clip_grad_norm_(model.parameters(), max_grad_norm)
+            origin_grad_norm = torch.nn.utils.clip_grad_norm_(
+                model.parameters(), max_grad_norm
+            )
             optimizer.step()
-            training_hook.after_batch(batch_idx, output, model)
+            training_hook.after_batch(batch_idx, origin_grad_norm, output)
 
-        # scheduler.step()
+        scheduler.step()
         training_hook.after_epoch(epoch, model, optimizer, val_loader, cfg)
 
     training_hook.after_run(cfg.total_epochs, model, optimizer, cfg)

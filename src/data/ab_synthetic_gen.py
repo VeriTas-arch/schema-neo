@@ -14,21 +14,25 @@ DEFAULT_STIM_DUR = 8        # Duration of each stimulus presentation
 DEFAULT_STIM_INTERVAL = 8   # Interval between consecutive stimuli
 DEFAULT_TARGET_LEN = 12     # Duration of each target waveform during retrieval
 
-STIM_INIT = 8               # Trial start: initial fixation duration before stim1
+STIM1_START = 8             # Trial start: initial fixation duration before stim1
+STIM2_START = 24
+STIM3_START = 40
+
+STIM_DRIFT = 8              # randomize the start of stimulus
+DELY_DRIFT = 10             # randomize the delay related period
 
 # Pre-cue period: The actual pre-cue duration is (stim3_interval + PRE_CUE_LEN).
-PRE_CUE_LEN_SINGLE = 12
-PRE_CUE_LEN_SWITCH = 16
+PRE_CUE_LEN_SINGLE = 20     # delay length for non-switch tasks
+PRE_CUE_LEN_SWITCH = 15
 
-CUE_LEN_SWITCH = 12         # Cue duration for switch task (forward/backward)
 CUE_LEN_SINGLE = 0          # Cue duration for non-switch tasks (no cue needed)
+CUE_LEN_SWITCH = 10         # Cue duration for switch task (forward/backward)
 
 # Delay after cue, before retrieval starts
-POST_CUE_LEN_SINGLE = 12
-POST_CUE_LEN_SWITCH = 24
+POST_CUE_LEN_SINGLE = 0
+POST_CUE_LEN_SWITCH = 15
 
 TOT_LEN = 200               # Total trial length (includes blank padding at end)
-RATIO = 0.25                # Ratio for computing randomized interval lengths (training mode)
 
 #! ------------- HARDCODED CONSTANTS -------------
 # note: Here 24 channels encode 6 items in a circle. The size 24 is
@@ -67,23 +71,6 @@ def get_item(item_index) -> np.ndarray:
         raise ValueError("No such item index! Only six classes (0-5).")
 
     return ITEM_TEMPLATES[item_index]
-
-
-def random_interval(num: int, ratio: float = 0.5) -> int:
-    """
-    Sample uniformly from ``(1-ratio)`` to ``(1+ratio)`` of ``num`` as integers (inclusive).
-    Ensure at least 1.
-    """
-    if ratio < 0 or ratio > 1:
-        raise ValueError("ratio should be in [0,1]")
-
-    min_post = max(1, int(np.floor(num * (1 - ratio))))
-    max_post = max(1, int(np.ceil(num * (1 + ratio))))
-
-    if max_post < min_post:
-        max_post = min_post
-
-    return int(np.random.randint(min_post, max_post + 1))
 
 
 #! ------------- DATA GENERATOR FUNCTIONS -------------
@@ -193,10 +180,7 @@ def get_data(
     however, here we still add a stimulus interval after stimulus 3 for consistency.
     """
 
-    # initialize RNG for reproducibility
     RNG = np.random.default_rng(seed)
-
-    # prepare permutation lists for each sequence length (1,2,3)
     perms_by_len = {L: list(itertools.permutations(range(6), L)) for L in (1, 2, 3)}
 
     # normalize seq_len parameter: int (fixed), None or "mixed" (sample from 1..3)
@@ -233,25 +217,25 @@ def get_data(
 
         # timepoints
         if type == "training":
-            stim1 = STIM_INIT + int(RNG.integers(0, STIM_INIT))
-            stim2 = stim1 + stim_dur + int(RNG.integers(0, stim_interval))
-            stim3 = stim2 + stim_dur + int(RNG.integers(0, stim_interval))
-            stim4 = stim3 + stim_dur + int(RNG.integers(0, stim_interval))
-            stim5 = random_interval(PRE_CUE_LEN, ratio=RATIO)
-            stim6 = random_interval(POST_CUE_LEN, ratio=RATIO)
-            stim7 = stim4 + stim5 + CUE_LEN + stim6
-            stim8 = target_len
-            cue_st = stim4 + stim5
+            stim1_st = STIM1_START + int(RNG.integers(0, STIM1_START))
+            stim2_st = STIM2_START + int(RNG.integers(0, STIM_DRIFT))
+            stim3_st = STIM3_START + int(RNG.integers(0, STIM_DRIFT))
+            delay_st = stim3_st + stim_dur
+            pre_cue_len = PRE_CUE_LEN + int(RNG.integers(0, DELY_DRIFT))
+            post_cue_len = POST_CUE_LEN + int(RNG.integers(0, DELY_DRIFT))
+            retr_st = delay_st + pre_cue_len + CUE_LEN + post_cue_len
+            tgt_len = target_len
+            cue_st = delay_st + pre_cue_len
         else:
-            stim1 = STIM_INIT  # start of stim1
-            stim2 = stim1 + stim_dur + stim_interval  # start of stim2
-            stim3 = stim2 + stim_dur + stim_interval  # start of stim3
-            stim4 = stim3 + stim_dur + stim_interval  # start of cue_pre or delay
-            stim5 = PRE_CUE_LEN  # length of pre_cue
-            stim6 = POST_CUE_LEN  # length of post_cue
-            stim7 = stim4 + stim5 + CUE_LEN + stim6  # start of retrieval
-            stim8 = target_len  # length of each target
-            cue_st = stim4 + stim5  # start of cue
+            stim1_st = STIM1_START
+            stim2_st = STIM2_START
+            stim3_st = STIM3_START
+            delay_st = stim3_st + stim_dur
+            pre_cue_len = PRE_CUE_LEN
+            post_cue_len = POST_CUE_LEN
+            retr_st = delay_st + pre_cue_len + CUE_LEN + post_cue_len
+            tgt_len = target_len
+            cue_st = delay_st + pre_cue_len
 
         # choose a permutation index for this trial
         perms = perms_by_len[L]
@@ -293,8 +277,6 @@ def get_data(
         stim_values = [np.zeros(N_STIM), np.zeros(N_STIM), np.zeros(N_STIM)]
 
         for k, it in enumerate(items):
-            # if k == 1:
-            #     continue
             stim_values[k] = get_item(it)
 
         stim_value_1, stim_value_2, stim_value_3 = stim_values
@@ -304,15 +286,15 @@ def get_data(
 
         # write stimuli (only present those according to L)
         if L >= 1:
-            train_x[i, stim1 : stim1 + stim_dur, 0:N_STIM] = stim_value_1.reshape(
+            train_x[i, stim1_st : stim1_st + stim_dur, 0:N_STIM] = stim_value_1.reshape(
                 1, N_STIM
             )
         if L >= 2:
-            train_x[i, stim2 : stim2 + stim_dur, 0:N_STIM] = stim_value_2.reshape(
+            train_x[i, stim2_st : stim2_st + stim_dur, 0:N_STIM] = stim_value_2.reshape(
                 1, N_STIM
             )
         if L >= 3:
-            train_x[i, stim3 : stim3 + stim_dur, 0:N_STIM] = stim_value_3.reshape(
+            train_x[i, stim3_st : stim3_st + stim_dur, 0:N_STIM] = stim_value_3.reshape(
                 1, N_STIM
             )
 
@@ -322,16 +304,16 @@ def get_data(
             train_x[i, cue_st : cue_st + CUE_LEN_SWITCH, N_STIM + 1] = stim_value_5
 
         # fixation
-        train_x[i, 0:stim7, -1] = 1
+        train_x[i, 0:retr_st, -1] = 1
 
-        train_t[i, 0] = int(stim1)  # start of stim1
-        train_t[i, 1] = int(stim2)  # start of stim2
-        train_t[i, 2] = int(stim3)  # start of stim3
-        train_t[i, 3] = int(stim4)  # start of cue_pre or delay
-        train_t[i, 4] = int(stim5)  # length of pre_cue
-        train_t[i, 5] = int(stim6)  # length of post_cue
-        train_t[i, 6] = int(stim7)  # start of retrieval
-        train_t[i, 7] = int(stim8)  # length of each target
+        train_t[i, 0] = int(stim1_st)  # start of stim1
+        train_t[i, 1] = int(stim2_st)  # start of stim2
+        train_t[i, 2] = int(stim3_st)  # start of stim3
+        train_t[i, 3] = int(delay_st)  # start of cue_pre or delay
+        train_t[i, 4] = int(pre_cue_len)  # length of pre_cue
+        train_t[i, 5] = int(post_cue_len)  # length of post_cue
+        train_t[i, 6] = int(retr_st)  # start of retrieval
+        train_t[i, 7] = int(tgt_len)  # length of each target
 
         # store perm index as class label; caller can use seq_lengths to decode
         train_y[i] = int(perm_idx)
@@ -617,6 +599,7 @@ class abcDataset(Dataset):
         and non-switch tasks. For non-switch tasks, the ``delay_start`` and
         ``delay_end`` correspond to the whole ``pre_cue_len + cue_len + post_cue_len``
         period.
+        - The key ``stim3_end`` is for compatibility only, one should avoid using it.
         """
         STIM_PERIOD = self.stim_dur + self.stim_interval
         CUE_LEN = CUE_LEN_SWITCH if self.task_mode == "switch" else CUE_LEN_SINGLE
@@ -628,73 +611,71 @@ class abcDataset(Dataset):
         )
 
         # the start timepoint of each stimulus
-        stim1_start = STIM_INIT
-        stim2_start = STIM_INIT + STIM_PERIOD
-        stim3_start = stim2_start + STIM_PERIOD
+        stim1_st = STIM1_START
+        stim2_st = STIM2_START
+        stim3_st = STIM3_START
 
         # the offset timepoint of each stimulus
-        stim1_off = stim1_start + self.stim_dur
-        stim2_off = stim2_start + self.stim_dur
-        stim3_off = stim3_start + self.stim_dur
+        stim1_off = stim1_st + self.stim_dur
+        stim2_off = stim2_st + self.stim_dur
+        stim3_off = stim3_st + self.stim_dur
 
         # the end timepoint of each stimulus (total period, including interval)
-        stim1_end = stim1_start + STIM_PERIOD
-        stim2_end = stim2_start + STIM_PERIOD
-        stim3_end = stim3_start + STIM_PERIOD
+        stim1_ed = stim1_st + STIM_PERIOD
+        stim2_ed = stim2_st + STIM_PERIOD
+        stim3_ed = stim3_st + STIM_PERIOD  # for compatibility only
 
         # cue period
-        # pre_cue_start = stim3_start + self.stim_dur
-        # cue_start = pre_cue_start + self.stim_interval + PRE_CUE_LEN
-        pre_cue_start = stim3_start + STIM_PERIOD
-        cue_start = pre_cue_start + PRE_CUE_LEN
-        cue_end = cue_start + CUE_LEN
-        post_cue_end = cue_end + POST_CUE_LEN
+        pre_cue_st = stim3_st + self.stim_dur
+        cue_st = pre_cue_st + PRE_CUE_LEN
+        cue_ed = cue_st + CUE_LEN
+        post_cue_ed = cue_ed + POST_CUE_LEN
 
         # delay period
         # (for non-switch tasks, this is the whole pre_cue+cue+post_cue period)
-        delay_start = pre_cue_start
-        delay_end = post_cue_end
+        delay_start = pre_cue_st
+        delay_end = post_cue_ed
 
         # target start timepoints
-        target1_start = cue_end + POST_CUE_LEN
-        target2_start = target1_start + DEFAULT_TARGET_LEN
-        target3_start = target2_start + DEFAULT_TARGET_LEN
+        target1_st = cue_ed + POST_CUE_LEN
+        target2_st = target1_st + DEFAULT_TARGET_LEN
+        target3_st = target2_st + DEFAULT_TARGET_LEN
 
         # target end timepoints
-        target1_end = target1_start + DEFAULT_TARGET_LEN
-        target2_end = target2_start + DEFAULT_TARGET_LEN
-        target3_end = target3_start + DEFAULT_TARGET_LEN
+        target1_ed = target1_st + DEFAULT_TARGET_LEN
+        target2_ed = target2_st + DEFAULT_TARGET_LEN
+        target3_ed = target3_st + DEFAULT_TARGET_LEN
 
         timepoints: dict = {
             # the start timepoint of each stimulus
-            "stim1_start": stim1_start,
-            "stim2_start": stim2_start,
-            "stim3_start": stim3_start,
+            "stim1_start": stim1_st,
+            "stim2_start": stim2_st,
+            "stim3_start": stim3_st,
             # the offset timepoint of each stimulus
             "stim1_off": stim1_off,
             "stim2_off": stim2_off,
             "stim3_off": stim3_off,
             # the end timepoint of each stimulus (total period, including interval)
-            "stim1_end": stim1_end,
-            "stim2_end": stim2_end,
-            "stim3_end": stim3_end,
+            "stim1_end": stim1_ed,
+            "stim2_end": stim2_ed,
+            "stim3_end": stim3_ed,
             # cue period
-            "pre_cue_start": pre_cue_start,
-            "cue_start": cue_start,
-            "cue_end": cue_end,
-            "post_cue_end": post_cue_end,
+            "pre_cue_start": pre_cue_st,
+            "cue_start": cue_st,
+            "cue_end": cue_ed,
+            "post_cue_end": post_cue_ed,
             # delay period
             # (for non-switch tasks, this is the whole pre_cue+cue+post_cue period)
             "delay_start": delay_start,
             "delay_end": delay_end,
             # target start timepoints
-            "target1_start": target1_start,
-            "target2_start": target2_start,
-            "target3_start": target3_start,
+            "target1_start": target1_st,
+            "target2_start": target2_st,
+            "target3_start": target3_st,
             # target end timepoints
-            "target1_end": target1_end,
-            "target2_end": target2_end,
-            "target3_end": target3_end,
+            "target1_end": target1_ed,
+            "target2_end": target2_ed,
+            "target3_end": target3_ed,
             "end": self.tot_len,
         }
         return timepoints
@@ -862,6 +843,10 @@ if __name__ == "__main__":
                 alpha=0.25,
                 label=f"stimulus {i + 1}",
             )
+
+            if i == seq_len - 1:
+                break  # the last stimulus needn't an interval
+
             ax.axvspan(
                 interval_start,
                 interval_end,
@@ -879,7 +864,7 @@ if __name__ == "__main__":
             ax.axvspan(t4, t7 - 1, color="gray", alpha=0.05, label="delay")
 
         ax.set_ylabel("Value")
-        ax.set_xlabel("Time")
+        ax.set_xlabel("Timestep")
 
         enable_legend = kwargs.get("enable_legend", True)
         no_border = kwargs.get("no_border", False)

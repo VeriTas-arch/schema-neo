@@ -83,15 +83,15 @@ class TrainingHook:
         if self.enable_logging:
             self.logger.info(f"Starting epoch {epoch + 1} / {cfg.total_epochs}")
 
-    def after_batch(self, batch_idx, output, model: torch.nn.Module | None = None):
+    def after_batch(self, batch_idx, grad_norm, output):
         """Called after each batch. Optionally compute grad norms if model given."""
         # delegate to helpers
-        grad_norm = self._compute_grad_norm(model)
         self._record_batch_metrics(output)
         if self.enable_logging and batch_idx % self.log_interval == 0:
             if grad_norm is not None:
+                self._grad_norms.append(grad_norm)
                 self.logger.info(
-                    f"Batch {batch_idx}, Loss: {float(output["record_res"]["loss"]):.4f}, GradNorm: {grad_norm:.4f}"
+                    f"Batch {batch_idx}, Loss: {float(output["record_res"]["loss"]):.4f}, Original GradNorm: {grad_norm:.4f}"
                 )
             else:
                 self.logger.info(
@@ -135,20 +135,6 @@ class TrainingHook:
         # plot and save aggregated curves
         self._plot_loss_curves()
         self._plot_grad_curve()
-
-    #! ------------- COMPUTATION FUNCTIONS -------------
-    def _compute_grad_norm(self, model: torch.nn.Module | None):
-        """Compute L2 norm of gradients for given model. Returns None if model is None."""
-        if model is None:
-            return None
-        total_sq = 0.0
-        for p in model.parameters():
-            if p.grad is not None:
-                g = p.grad.detach()
-                total_sq += float(g.norm(2).item() ** 2)
-        grad_norm = float(total_sq**0.5) if total_sq > 0.0 else 0.0
-        self._grad_norms.append(grad_norm)
-        return grad_norm
 
     #! ------------- RECORD FUNCTIONS -------------
     def _record_batch_metrics(self, output):
