@@ -3,10 +3,11 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-import numpy as np
 import matplotlib.pyplot as plt
-import generator.utils as utils
+import numpy as np
 from matplotlib.lines import Line2D  # noqa: F401
+
+import generator.utils as utils
 
 utils.set_plot()
 # colors_list = ["#C93F3F", "#F97316", "#D4B106", "#16A34A", "#2563EB", "#A855F7"]

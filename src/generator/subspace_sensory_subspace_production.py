@@ -11,10 +11,11 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.linear_model import Ridge
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from scipy.spatial import ConvexHull
+from sklearn.decomposition import PCA
+from sklearn.linear_model import Ridge
+
 import generator.utils as utils
 
 # 设置全局字体为Arial
@@ -44,6 +45,7 @@ labels = labels.reshape(-1)
 
 print(tps)
 
+
 def compute_one(class_i):
     class_i = class_i % N_CLASS
     item_1, item_2, item_3 = PERMS[class_i]
@@ -69,9 +71,7 @@ def compute_beta_for_time_window(
     if start >= end:
         return np.zeros((hiddens.shape[2], 18))
 
-    window_data = hiddens[
-        :, start : end, :
-    ]  # (trials, window_size, neurons)
+    window_data = hiddens[:, start:end, :]  # (trials, window_size, neurons)
     window_mean = np.mean(window_data, axis=1)  # (trials, neurons)
 
     N_trials = window_data.shape[0]
@@ -421,16 +421,9 @@ def plot_composite_figure(h_combined, h_encoding, fig_path):
         idx_s2 = get_time_idx(tps["stim2_start"])
         idx_s3 = get_time_idx(tps["stim3_start"])
 
-        tick_indices = [
-            idx_s1,
-            idx_s2,
-            idx_s3,
-        ]
+        tick_indices = [idx_s1, idx_s2, idx_s3]
 
-        ax_single.set_xticks(
-            tick_indices,
-            ["S1", "S2", "S3"],
-        )
+        ax_single.set_xticks(tick_indices, ["S1", "S2", "S3"])
         ax_single.set_xlabel("Time", fontsize=10, labelpad=20)
 
         ax_single.set_yticks([])
@@ -445,16 +438,17 @@ def plot_composite_figure(h_combined, h_encoding, fig_path):
 
     plt.close(fig)
 
-if __name__ == "__main__": # 注意这里的引号修复
+
+if __name__ == "__main__":  # 注意这里的引号修复
     # 1. 计算原始数据
     h_pca_combined, h_pca_encoding = compute_pca_data(
         hiddens, labels, tps, FIG_DIR, overwrite=False
     )
     WINDOW_SIZE = 5
 
-    print("\n" + "="*40)
+    print("\n" + "=" * 40)
     print(f"Window Count Analysis (Window Size = {WINDOW_SIZE})")
-    print("="*40)
+    print("=" * 40)
 
     # 定义要查看的刺激阶段
     stages = ["stim1", "stim2", "stim3"]
@@ -489,7 +483,6 @@ if __name__ == "__main__": # 注意这里的引号修复
         print(f"Modified shape: {h_pca_encoding_modified.shape}")
     else:
         h_pca_encoding_modified = h_pca_encoding
-
 
     # =======================================================
     # 修改结束

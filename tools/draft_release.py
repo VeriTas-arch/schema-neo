@@ -10,11 +10,11 @@
 """
 
 import shutil
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 from typing import Dict, List, Optional
-import subprocess
 
 ROOT = Path(__file__).resolve().parents[1]
 FIG_DIR = ROOT / "figure"

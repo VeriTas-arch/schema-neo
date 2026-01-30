@@ -5,10 +5,10 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-import generator.utils as utils
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Lasso
+
+import generator.utils as utils
 
 #### parameters
 TASK = "forward"

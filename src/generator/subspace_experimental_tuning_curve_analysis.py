@@ -13,14 +13,13 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
+from scipy.optimize import minimize
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Lasso
-from scipy.optimize import minimize
 
 import generator.utils as utils
-
 
 # ============================================================
 #  Parameters & data loading

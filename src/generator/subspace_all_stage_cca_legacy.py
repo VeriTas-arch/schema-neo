@@ -5,11 +5,11 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+from sklearn.cross_decomposition import CCA
+from sklearn.decomposition import PCA
 
 import generator.utils as utils
-from sklearn.cross_decomposition import CCA
-import seaborn as sns
-from sklearn.decomposition import PCA
 
 #### parameters
 TASK = "forward"
@@ -226,6 +226,6 @@ sns.heatmap(
 plt.xticks(rotation=45, ha="right")
 plt.yticks(rotation=45)
 plt.tight_layout()
-plt.savefig(f"{FIG_DIR}/sfig_all_stage_subspace_cca_heatmap.pdf", bbox_inches='tight')
+plt.savefig(f"{FIG_DIR}/sfig_all_stage_subspace_cca_heatmap.pdf", bbox_inches="tight")
 print(f"Figure saved to: {FIG_DIR}/sfig_all_stage_subspace_cca_heatmap.pdf")
 plt.show()

@@ -1,12 +1,11 @@
-from flax import linen as nn
+from typing import Any, Callable, Tuple
+
 import jax.numpy as jnp
+from flax import linen as nn
+from flax import struct
 
 # from flax.linen.initializers import orthogonal
 from flax.linen.initializers import zeros
-from typing import Any, Callable, Tuple
-
-from flax import struct
-
 
 PRNGKey = Any
 Shape = Tuple[int, ...]

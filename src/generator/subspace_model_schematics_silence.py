@@ -3,10 +3,11 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
-import numpy as np
 import matplotlib.pyplot as plt
-import generator.utils as utils
+import numpy as np
 from matplotlib.lines import Line2D  # noqa: F401
+
+import generator.utils as utils
 
 utils.set_plot()
 # colors_list = ["#C93F3F", "#F97316", "#D4B106", "#16A34A", "#2563EB", "#A855F7"]
@@ -766,8 +767,12 @@ if __name__ == "__main__":
     TASK = "forward"
     N_SAMPLES = 120
     FILENAME = Path(__file__).name
-    clean_params = utils.initialize_analysis_legacy(TASK, N_SAMPLES, FILENAME, noise_sigma=0.0, silence_whh=True)
-    noisy_params = utils.initialize_analysis_legacy(TASK, N_SAMPLES, FILENAME, noise_sigma=0.1, silence_whh=True)
+    clean_params = utils.initialize_analysis_legacy(
+        TASK, N_SAMPLES, FILENAME, noise_sigma=0.0, silence_whh=True
+    )
+    noisy_params = utils.initialize_analysis_legacy(
+        TASK, N_SAMPLES, FILENAME, noise_sigma=0.1, silence_whh=True
+    )
 
     N_HID = clean_params["N_HID"]
     N_CLASS = clean_params["N_CLASS"]

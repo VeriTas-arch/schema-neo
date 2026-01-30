@@ -3,10 +3,11 @@ Plot Gaussian bumps on a circle and draw circle patterns with optional fixation 
 This script is intended for paper figure generation.
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.colors as mcolors
 from pathlib import Path
+
+import matplotlib.colors as mcolors
+import matplotlib.pyplot as plt
+import numpy as np
 
 temp_dir = Path(__file__).resolve().parents[2] / "temp"
 temp_dir.mkdir(parents=True, exist_ok=True)
@@ -24,6 +25,7 @@ def darken_color(hex_color, factor=0.6):
 
 # Generate darker edge colors
 dark_edge_colors = [darken_color(color) for color in colors_list]
+
 
 def plot_gaussian_on_circle(plot_gaussian_bumps=False, chosen_idx=None):
     N = 24
@@ -143,7 +145,8 @@ def draw_pattern(fixation_enabled=True, active_index=None):
     ax.set_aspect("equal")
     ax.axis("off")
     plt.savefig(
-        f"{temp_dir}/circle_pattern_{active_index}_fixation={fixation_enabled}.png", dpi=600
+        f"{temp_dir}/circle_pattern_{active_index}_fixation={fixation_enabled}.png",
+        dpi=600,
     )
     print(
         f"figure saved to {temp_dir}/circle_pattern_{active_index}_fixation={fixation_enabled}.png"

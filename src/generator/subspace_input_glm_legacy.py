@@ -11,10 +11,10 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
-
-import generator.utils as utils
 from sklearn.decomposition import PCA
 from sklearn.linear_model import Lasso
+
+import generator.utils as utils
 
 #### parameters
 TASK = "forward"
@@ -24,7 +24,9 @@ params = utils.initialize_analysis_legacy(TASK, N_SAMPLES, FILENAME)
 
 params_list = []
 for i in range(5):
-    params_list.append(utils.initialize_analysis_legacy_multi_models(i, TASK, N_SAMPLES, FILENAME))
+    params_list.append(
+        utils.initialize_analysis_legacy_multi_models(i, TASK, N_SAMPLES, FILENAME)
+    )
 
 N_HID = params["N_HID"]
 N_CLASS = params["N_CLASS"]
@@ -699,8 +701,6 @@ def plot_glm_subspace_combined_multi_models(
 # 使用新函数绘制三个时期的GLM子空间分析（3x4大图，多模型平均）
 print("绘制三个时期的GLM子空间分析（3x4大图，多模型平均）...")
 h_pca_mean, variance_mean, variance_std = plot_glm_subspace_combined_multi_models(
-    params_list,
-    FIG_DIR,
-    fig_name="sfig_input_glm",
+    params_list, FIG_DIR, fig_name="sfig_input_glm"
 )
 print("所有图表绘制完成！")

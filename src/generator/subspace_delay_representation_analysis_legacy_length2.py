@@ -5,9 +5,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.decomposition import PCA
 
 import generator.utils as utils
-from sklearn.decomposition import PCA
 
 #### parameters
 TASK = "forward"

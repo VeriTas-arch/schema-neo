@@ -21,7 +21,7 @@ from sklearnex import patch_sklearn
 
 from config.ab_synthetic_config import SynConfig
 from data.ab_synthetic_gen import abcDataset
-from lib.model import RNNConfig, RNNNet, SimpleRNN, LegacyRNNConfig, LegacyRNNNet
+from lib.model import LegacyRNNConfig, LegacyRNNNet, RNNConfig, RNNNet, SimpleRNN
 
 patch_sklearn()
 

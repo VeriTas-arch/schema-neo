@@ -5,11 +5,11 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
+from sklearn.cross_decomposition import CCA
+from sklearn.decomposition import PCA
 
 import generator.utils as utils
-from sklearn.cross_decomposition import CCA
-import seaborn as sns
-from sklearn.decomposition import PCA
 
 #### parameters
 TASK = "forward"

@@ -10,10 +10,11 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
-from sklearn.decomposition import PCA
-from sklearn.linear_model import Ridge
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from scipy.spatial import ConvexHull
+from sklearn.decomposition import PCA
+from sklearn.linear_model import Ridge
+
 import generator.utils as utils
 
 # 设置全局字体为Arial
@@ -42,6 +43,7 @@ labels = labels.reshape(-1)
 
 
 print(tps)
+
 
 def compute_one(class_i):
     class_i = class_i % N_CLASS

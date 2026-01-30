@@ -9,9 +9,9 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 
 import matplotlib.pyplot as plt
 import numpy as np
+from sklearn.linear_model import Lasso
 
 import generator.utils as utils
-from sklearn.linear_model import Lasso
 
 
 def set_plot():
@@ -673,7 +673,12 @@ def plot_nss_distribution(cos_stats, neuron_list, fig_name=None, bin_width=0.1):
             ha="right",
             va="top",
             fontsize=base_label_size - 4,
-            bbox=dict(boxstyle="round,pad=0.5", facecolor="white", edgecolor="#333333", alpha=0.8),
+            bbox=dict(
+                boxstyle="round,pad=0.5",
+                facecolor="white",
+                edgecolor="#333333",
+                alpha=0.8,
+            ),
         )
 
         ax.set_xlabel(label, fontsize=base_label_size, labelpad=5)
@@ -681,9 +686,11 @@ def plot_nss_distribution(cos_stats, neuron_list, fig_name=None, bin_width=0.1):
         ax.spines["top"].set_visible(False)
 
         # 设置坐标轴宽度和 tick 宽度
-        ax.spines["left"].set_linewidth(2)    # 左 y 轴宽度
+        ax.spines["left"].set_linewidth(2)  # 左 y 轴宽度
         ax.spines["bottom"].set_linewidth(2)  # x 轴宽度
-        ax.tick_params(labelsize=base_label_size - 2, width=2, length=8)  # tick 宽度和长度
+        ax.tick_params(
+            labelsize=base_label_size - 2, width=2, length=8
+        )  # tick 宽度和长度
 
         # 只在最左侧显示y轴
         if idx == 0:

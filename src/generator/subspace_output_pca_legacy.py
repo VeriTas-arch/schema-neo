@@ -41,6 +41,7 @@ hiddens = np.tanh(hiddens)
 
 plt.rcParams["font.sans-serif"] = "Arial"
 
+
 def compute_one(class_i: int) -> tuple[int, int, int]:
     """
     Return the three items for a given permutation index.

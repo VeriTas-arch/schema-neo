@@ -1,6 +1,7 @@
-import torch
-import numpy as np
 import math
+
+import numpy as np
+import torch
 from torch.utils.data import Dataset
 
 
@@ -172,7 +173,6 @@ def get_regress_target_long(class_i, train_t, stim_len):
         ] = 1
 
     reg_out[: t3 + t4 + 8 + t5 + 10, -1] = 1
-
 
     return reg_out
 

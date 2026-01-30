@@ -6,7 +6,6 @@ sys.path.append(str(Path(__file__).resolve().parent.parent))
 from argparse import ArgumentParser
 
 import torch
-
 from torch.optim.lr_scheduler import StepLR
 from torch.utils.data import DataLoader
 

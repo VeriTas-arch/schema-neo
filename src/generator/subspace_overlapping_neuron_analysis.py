@@ -7,11 +7,12 @@ from pathlib import Path
 
 sys.path.append(str(Path(__file__).resolve().parent.parent))
 
+import csv
+from typing import Dict, Tuple
+
 import matplotlib.pyplot as plt
 import numpy as np
 from scipy.linalg import subspace_angles
-from typing import Tuple, Dict
-import csv
 
 import generator.utils as utils
 
