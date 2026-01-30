@@ -50,7 +50,7 @@ class SynConfig:
         default_factory=lambda: 24 if torch.cuda.is_available() else 0
     )
     total_epochs: int = -1  # will be set in __post_init__ after task is known
-    max_grad_norm: float = 0.2
+    max_grad_norm: float = 0.5
 
     # model parameters
     model: str = "SimpleRNN"
@@ -66,6 +66,11 @@ class SynConfig:
     dt: float = 0.05
 
     h0_trainable: bool = False
+    use_layernorm: bool = (
+        False  #! use layer_norm will lead to more stable result, thus the backward task will not require pretraining
+    )
+    # 使用层归一化之后，训练得到的模型会更稳定，因此 backward 任务不再会进入局部最优解
+    # 这样的话，生物合理性会相对较差，并不符合预期的假设
 
     # allow callers to pass a pre-built rnn_config dict; otherwise fill defaults in __post_init__
     rnn_config: dict = field(default_factory=dict)
@@ -94,10 +99,10 @@ class SynConfig:
         self.total_epochs: int = 360 if self.task == "switch" else 360
 
         if self.model_dir is None and self.work_dir is None:
-            # Model directory at project root (next to 'src')
+            # Model directory at project root (next to `src`)
             ext_name = f"{datetime.now():%Y%m%d_%H%M%S}"
             self.model_dir = self.project_root_dir / "model" / f"{self.task}"
-            self.work_dir = f"{self.model_dir}/{ext_name}"
+            self.work_dir = self.model_dir / ext_name
 
         #! ----- PRETRAINED MODEL LOADING -----
         self.load_pretrained_dir = (
@@ -106,7 +111,7 @@ class SynConfig:
         self.freeze_except = ["Wr", "bias"]
 
         # print("[DEBUG] batch resize factor:", (1 + self.batch_size / 256))
-        # self.optimizer["lr"] = min(2e-3, 1e-3 * (1 + self.batch_size / 128))
+        self.optimizer["lr"] = min(2e-3, 1e-3 * (1 + self.batch_size / 128))
 
         # populate rnn_config only if caller did not provide one
         if not isinstance(self.rnn_config, dict) or len(self.rnn_config) == 0:
@@ -119,6 +124,7 @@ class SynConfig:
                 dt=self.dt,
                 tau=self.tau,
                 h0_trainable=self.h0_trainable,
+                use_layernorm=self.use_layernorm,
             )
 
     def to_dict(self):

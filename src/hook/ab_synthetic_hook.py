@@ -86,6 +86,7 @@ class TrainingHook:
     def after_batch(self, batch_idx, grad_norm, output):
         """Called after each batch. Optionally compute grad norms if model given."""
         # delegate to helpers
+        grad_norm = grad_norm.cpu().numpy()
         self._record_batch_metrics(output)
         if self.enable_logging and batch_idx % self.log_interval == 0:
             if grad_norm is not None:
