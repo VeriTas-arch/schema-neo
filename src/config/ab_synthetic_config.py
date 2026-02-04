@@ -66,6 +66,11 @@ class SynConfig:
     dt: float = 0.05
 
     h0_trainable: bool = False
+    use_layernorm: bool = (
+        False  #! use layer_norm will lead to more stable result, thus the backward task will not require pretraining
+    )
+    # 使用层归一化之后，训练得到的模型会更稳定，因此 backward 任务不再会进入局部最优解
+    # 这样的话，生物合理性会相对较差，并不符合预期的假设
 
     # allow callers to pass a pre-built rnn_config dict; otherwise fill defaults in __post_init__
     rnn_config: dict = field(default_factory=dict)
